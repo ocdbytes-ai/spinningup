@@ -2,7 +2,10 @@ import time
 import joblib
 import os
 import os.path as osp
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 import torch
 from spinup import EpochLogger
 from spinup.utils.logx import restore_tf_graph
@@ -67,6 +70,12 @@ def load_policy_and_env(fpath, itr='last', deterministic=False):
 def load_tf_policy(fpath, itr, deterministic=False):
     """ Load a tensorflow policy saved with Spinning Up Logger."""
 
+    if tf is None:
+        raise RuntimeError(
+            "This save was produced by the legacy TensorFlow 1.x backend, but "
+            "TensorFlow is not installed. TF1 is not compatible with modern "
+            "Python; retrain the policy with the PyTorch backend to load it here.")
+
     fname = osp.join(fpath, 'tf1_save'+itr)
     print('\n\nLoading from %s.\n\n'%fname)
 
@@ -95,7 +104,10 @@ def load_pytorch_policy(fpath, itr, deterministic=False):
     fname = osp.join(fpath, 'pyt_save', 'model'+itr+'.pt')
     print('\n\nLoading from %s.\n\n'%fname)
 
-    model = torch.load(fname)
+    # weights_only defaults to True in torch >= 2.6, which refuses to unpickle
+    # the full saved module. These are our own trusted checkpoints, so load the
+    # whole object.
+    model = torch.load(fname, weights_only=False)
 
     # make function for producing an action given a single state
     def get_action(x):
@@ -115,21 +127,24 @@ def run_policy(env, get_action, max_ep_len=None, num_episodes=100, render=True):
         "page on Experiment Outputs for how to handle this situation."
 
     logger = EpochLogger()
-    o, r, d, ep_ret, ep_len, n = env.reset(), 0, False, 0, 0, 0
+    o, r, d, ep_ret, ep_len, n = env.reset()[0], 0, False, 0, 0, 0
     while n < num_episodes:
         if render:
+            # In Gymnasium the render mode is chosen when the env is created
+            # (render_mode='human'); render() may be a no-op for saved envs.
             env.render()
             time.sleep(1e-3)
 
         a = get_action(o)
-        o, r, d, _ = env.step(a)
+        o, r, terminated, truncated, _ = env.step(a)
+        d = terminated or truncated
         ep_ret += r
         ep_len += 1
 
         if d or (ep_len == max_ep_len):
             logger.store(EpRet=ep_ret, EpLen=ep_len)
             print('Episode %d \t EpRet %.3f \t EpLen %d'%(n, ep_ret, ep_len))
-            o, r, d, ep_ret, ep_len = env.reset(), 0, False, 0, 0
+            o, r, d, ep_ret, ep_len = env.reset()[0], 0, False, 0, 0
             n += 1
 
     logger.log_tabular('EpRet', with_min_and_max=True)

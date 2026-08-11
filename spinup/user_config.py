@@ -1,11 +1,14 @@
 import os
 import os.path as osp
 
-# Default neural network backend for each algo
-# (Must be either 'tf1' or 'pytorch')
+# Default neural network backend for each algo.
+# (Must be either 'tf1' or 'pytorch'. Note: the tf1 backend is legacy and only
+# works if a compatible TensorFlow 1.x is installed separately; PyTorch is the
+# supported default. TRPO only ever had a tf1 implementation, so requesting it
+# will raise NotImplementedError until a PyTorch port lands.)
 DEFAULT_BACKEND = {
     'vpg': 'pytorch',
-    'trpo': 'tf1',
+    'trpo': 'pytorch',
     'ppo': 'pytorch',
     'ddpg': 'pytorch',
     'td3': 'pytorch',

@@ -1,0 +1,49 @@
+[project]
+name = "spinup"
+version = "0.2.0"
+description = "Teaching tools for introducing people to deep RL (modernized fork)."
+authors = [{ name = "Joshua Achiam" }]
+readme = "readme.md"
+license = { text = "MIT" }
+requires-python = ">=3.10,<3.13"
+dependencies = [
+    "cloudpickle>=3.0",
+    "gymnasium>=1.0",
+    "ipython>=8.0",
+    "joblib>=1.3",
+    "matplotlib>=3.8",
+    "numpy>=1.26",
+    "pandas>=2.1",
+    "psutil>=5.9",
+    "scipy>=1.11",
+    "seaborn>=0.13",
+    "torch>=2.2",
+    "tqdm>=4.66",
+]
+
+[project.optional-dependencies]
+# Multi-process training (num_cpu > 1). Also needs a system MPI runtime, e.g.
+# `brew install open-mpi` (macOS) or `apt install libopenmpi-dev` (Debian).
+# Single-process training works without this.
+mpi = ["mpi4py>=3.1"]
+# Extra Gymnasium environment families. Some require system build tools
+# (e.g. box2d needs SWIG); install only what you need.
+mujoco = ["gymnasium[mujoco]>=1.0"]
+box2d = ["gymnasium[box2d]>=1.0"]
+atari = ["gymnasium[atari]>=1.0", "ale-py>=0.9"]
+
+[dependency-groups]
+dev = ["pytest>=8.0"]
+
+[project.urls]
+Homepage = "https://github.com/openai/spinningup"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["spinup"]
+
+[tool.hatch.metadata]
+allow-direct-references = true

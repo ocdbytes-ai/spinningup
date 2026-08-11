@@ -3,12 +3,15 @@ from spinup.user_config import DEFAULT_BACKEND
 from spinup.utils.run_utils import ExperimentGrid
 from spinup.utils.serialization_utils import convert_json
 import argparse
-import gym
+import gymnasium as gym
 import json
 import os, subprocess, sys
 import os.path as osp
 import string
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    tf = None
 import torch
 from copy import deepcopy
 from textwrap import dedent
@@ -52,6 +55,13 @@ def parse_and_execute_grid_search(cmd, args):
         backend = DEFAULT_BACKEND[cmd]
         print('\n\nUsing default backend (%s) for %s.\n'%(backend, cmd))
         cmd = cmd + '_' + backend
+
+    if cmd.endswith('_tf1') and not hasattr(spinup, cmd):
+        raise RuntimeError(friendly_err(
+            "The TensorFlow 1.x backend ('%s') is not available. TF1 is not "
+            "compatible with modern Python, so this fork ships the PyTorch "
+            "backend by default. Use the '_pytorch' variant instead, e.g. "
+            "'%s_pytorch'." % (cmd, cmd[:-4])))
 
     algo = eval('spinup.'+cmd)
 
@@ -153,7 +163,7 @@ def parse_and_execute_grid_search(cmd, args):
 
     # Special handling for environment: make sure that env_name is a real,
     # registered gym environment.
-    valid_envs = [e.id for e in list(gym.envs.registry.all())]
+    valid_envs = list(gym.envs.registry.keys())
     assert 'env_name' in arg_dict, \
         friendly_err("You did not give a value for --env_name! Add one and try again.")
     for env_name in arg_dict['env_name']:
@@ -222,7 +232,7 @@ if __name__ == '__main__':
             FYI: When running an algorithm, any keyword argument to the
             algorithm function can be used as a flag, eg
 
-            \tpython -m spinup.run ppo --env HalfCheetah-v2 --clip_ratio 0.1
+            \tpython -m spinup.run ppo --env HalfCheetah-v4 --clip_ratio 0.1
 
             If you need a quick refresher on valid kwargs, get the docstring
             with

@@ -9,7 +9,12 @@ import json
 import joblib
 import shutil
 import numpy as np
-import tensorflow as tf
+try:
+    import tensorflow as tf
+except ImportError:
+    # TensorFlow 1.x is optional legacy support; the PyTorch backend does not
+    # need it. TF-only methods below will raise if called without it.
+    tf = None
 import torch
 import os.path as osp, time, atexit, os
 import warnings
