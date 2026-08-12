@@ -23,12 +23,15 @@ def gaussian_likelihood(x, mu, log_std):
     Returns:
         Tensor with shape [batch]
     """
-    #######################
-    #                     #
-    #   YOUR CODE HERE    #
-    #                     #
-    #######################
-    return torch.zeros(1)
+    # Solution
+    # Based on the diagonal gaussian policy
+    # log likelyhood
+    eq_1 = x - mu
+    eq_2 = eq_1 / torch.exp(log_std)
+    eq_2 = eq_2 ** 2
+    eq_3 = eq_2 + 2 * log_std
+    result = -0.5 * (eq_3 + np.log(2 * np.pi))
+    return result.sum(axis = -1)
 
 
 if __name__ == '__main__':
