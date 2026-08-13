@@ -119,11 +119,26 @@ def train(env_name='CartPole-v1', hidden_sizes=[32], lr=1e-2,
         optimizer.step()
         return batch_loss, batch_rets, batch_lens
 
+    # save the trained policy (weights + architecture, so enjoy.py can rebuild it)
+    save_path = '%s_policy.pt' % env_name.replace('/', '_')
+
     # training loop
+    best_ret = -float('inf')
     for i in range(epochs):
         batch_loss, batch_rets, batch_lens = train_one_epoch()
+        avg_ret = np.mean(batch_rets)
         print('epoch: %3d \t loss: %.3f \t return: %.3f \t ep_len: %.3f'%
-                (i, batch_loss, np.mean(batch_rets), np.mean(batch_lens)))
+                (i, batch_loss, avg_ret, np.mean(batch_lens)))
+
+        # keep the best policy, since vanilla PG can peak then degrade
+        if avg_ret > best_ret:
+            best_ret = avg_ret
+            torch.save({'state_dict': logits_net.state_dict(),
+                        'hidden_sizes': hidden_sizes,
+                        'obs_dim': obs_dim,
+                        'n_acts': n_acts}, save_path)
+
+    print('\nSaved best policy (return %.3f) to %s' % (best_ret, save_path))
 
 if __name__ == '__main__':
     import argparse
