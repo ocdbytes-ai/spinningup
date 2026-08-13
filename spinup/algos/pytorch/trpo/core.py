@@ -281,6 +281,16 @@ class MLPActorCritic(nn.Module):
     def __init__(self, observation_space, action_space, hidden_sizes=(64, 64)):
         super().__init__()
 
+        # MLP only. An image observation would otherwise build a network off a
+        # spatial dimension (shape[0] is 210 or 84, not a feature count),
+        # construct without complaint, and only fail later in the forward pass.
+        if len(observation_space.shape) != 1:
+            raise NotImplementedError(
+                f"MLPActorCritic needs a flat observation space, got shape "
+                f"{observation_space.shape}. Image observations need a "
+                f"convolutional actor-critic."
+            )
+
         obs_dim = observation_space.shape[0]
 
         if isinstance(action_space, Box):

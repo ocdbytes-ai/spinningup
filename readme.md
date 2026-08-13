@@ -48,7 +48,7 @@ Optional extras (`uv sync --extra <name>`):
 - **TRPO (PyTorch)**: Added TRPO pytorch implementation and works awesome :). Tried it on LunarLander v3
 - **Dependencies**: migrated to `uv`; `torch`, `numpy`, `gymnasium`, `pandas`, `matplotlib`, `seaborn`, `scipy` bumped to current stable releases.
 - **Gym → Gymnasium**: the code now targets [Gymnasium](https://gymnasium.farama.org/), including the 5-tuple `step()` (`terminated`/`truncated`) and tuple `reset()` APIs. Default environment IDs were updated (e.g. `HalfCheetah-v2` → `-v4`, `CartPole-v0` → `-v1`).
-- **TensorFlow**: the legacy TF1 backend is not installed by default (TF1 is incompatible with modern Python). The TF1 source is kept but dormant; the **PyTorch backend is the default** for every algorithm. Requesting a `_tf1` variant raises a clear error. TRPO only ever had a TF1 implementation, so it currently raises `NotImplementedError`.
+- **TensorFlow**: the legacy TF1 backend is not installed by default (TF1 is incompatible with modern Python). The TF1 source is kept but dormant; the **PyTorch backend is the default** for every algorithm. Requesting a `_tf1` variant raises a clear error.
 - **MPI is optional**: without `mpi4py`/a system MPI, training runs single-process; `num_cpu > 1` raises a clear error telling you what to install.
 
 Citing Spinning Up
